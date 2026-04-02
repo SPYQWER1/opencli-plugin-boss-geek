@@ -20,7 +20,7 @@ cli({
   columns: ['status', 'detail'],
   func: async (page, kwargs) => {
     requirePage(page);
-    return [{ status: 'TEST', detail: 'CODE UPDATED' }];
+    verbose(`Sending message to ${kwargs.uid}...`);
 
     const uid = kwargs.uid;
     const text = kwargs.text;
@@ -128,8 +128,8 @@ cli({
 
     if (!clicked) {
       return [{
-        status: '❌ FAIL',
-        detail: `DEBUG: name=${friendName}, friends=${friends.length}, idx=${friendIndex}, uid=${uid.substring(0,10)}`,
+        status: '❌ 失败',
+        detail: `在聊天列表中未找到 ${friendName}，friends=${friends.length}, idx=${friendIndex}`,
       }];
     }
 
