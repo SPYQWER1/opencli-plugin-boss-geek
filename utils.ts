@@ -36,10 +36,10 @@ export function requirePage(page: IPage | null): asserts page is IPage {
 }
 
 /**
- * Navigate to a custom BOSS page.
+ * Navigate to a custom BOSS page and wait for it to load.
  */
 export async function navigateTo(page: IPage, url: string, waitSeconds = 1): Promise<void> {
-  await page.goto(url);
+  await page.goto(url, { waitUntil: 'load' });
   await page.wait({ time: waitSeconds });
 }
 
