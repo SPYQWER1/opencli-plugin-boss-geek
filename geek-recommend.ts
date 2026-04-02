@@ -22,9 +22,7 @@ cli({
     verbose('Fetching recommended jobs...');
 
     // 导航到求职者页面建立 session
-    await navigateTo(page, 'https://www.zhipin.com/web/geek/job');
-    // 等待页面关键元素加载完成
-    await page.wait({ selector: '[class*="job"], [class*="list"]', timeout: 10000 });
+    await navigateTo(page, 'https://www.zhipin.com/web/geek/job', 2);
 
     const pageNum = kwargs.page || 1;
     const pageSize = kwargs.limit || 20;

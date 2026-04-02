@@ -22,9 +22,7 @@ cli({
     verbose('Fetching geek chat list...');
 
     // 导航到求职者聊天页面建立 session
-    await navigateTo(page, 'https://www.zhipin.com/web/geek/chat');
-    // 等待页面关键元素加载完成
-    await page.wait({ selector: '[class*="chat"], [class*="friend"]', timeout: 10000 });
+    await navigateTo(page, 'https://www.zhipin.com/web/geek/chat', 2);
 
     const url = `https://www.zhipin.com/wapi/zprelation/friend/getGeekFriendList.json?page=${kwargs.page || 1}&pageSize=20`;
     const data = await bossFetch(page, url);
