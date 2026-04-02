@@ -129,8 +129,8 @@ cli({
 
     if (!clicked) {
       return [{
-        status: '❌ 失败',
-        detail: `未找到用户: name=${friendName}, uid=${uid.substring(0,15)}..., friends=${friends.length}, idx=${friendIndex}`,
+        status: '❌ FAIL',
+        detail: `DEBUG: name=${friendName}, friends=${friends.length}, idx=${friendIndex}, uid=${uid.substring(0,10)}`,
       }];
     }
 
