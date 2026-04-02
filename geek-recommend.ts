@@ -21,8 +21,8 @@ cli({
     requirePage(page);
     verbose('Fetching recommended jobs...');
 
-    // 导航到求职者页面建立 session
-    await navigateTo(page, 'https://www.zhipin.com/web/geek/job');
+    // 导航到求职者页面建立 session，等待页面完全加载
+    await navigateTo(page, 'https://www.zhipin.com/web/geek/job', 3);
 
     const pageNum = kwargs.page || 1;
     const pageSize = kwargs.limit || 20;
