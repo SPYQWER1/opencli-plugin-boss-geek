@@ -1,0 +1,9 @@
+{
+  "name": "opencli-plugin-boss-geek",
+  "version": "1.0.0",
+  "description": "BOSS直聘求职者端 CLI 插件 - 搜索职位、投递简历、查看聊天",
+  "type": "module",
+  "peerDependencies": {
+    "@jackwener/opencli": ">=1.5.0"
+  }
+}
