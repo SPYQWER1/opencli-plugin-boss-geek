@@ -20,8 +20,7 @@ cli({
   columns: ['status', 'detail'],
   func: async (page, kwargs) => {
     requirePage(page);
-    console.error('[geek-send] Starting...');
-    verbose(`Sending message to ${kwargs.uid}...`);
+    return [{ status: 'TEST', detail: 'CODE UPDATED' }];
 
     const uid = kwargs.uid;
     const text = kwargs.text;
