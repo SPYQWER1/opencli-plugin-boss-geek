@@ -31,6 +31,7 @@ cli({
 
     // 通过 API 获取职位信息以获取 encryptJobId
     const detailApi = `https://www.zhipin.com/wapi/zpgeek/job/detail.json?securityId=${encodeURIComponent(securityId)}`;
+    verbose(`Fetching job detail: ${detailApi.substring(0, 80)}...`);
 
     let jobName = '职位';
     let bossName = '招聘方';
@@ -39,19 +40,29 @@ cli({
     try {
       const detailData = await page.evaluate(`
         async () => {
-          const res = await fetch('${detailApi}', { credentials: 'include' });
-          return await res.json();
+          try {
+            const res = await fetch('${detailApi}', { credentials: 'include' });
+            return await res.json();
+          } catch (e) {
+            return { error: e.message };
+          }
         }
       `) as any;
+
+      verbose(`API response code: ${detailData.code}`);
 
       if (detailData.code === 0 && detailData.zpData?.jobInfo) {
         jobName = detailData.zpData.jobInfo.jobName || jobName;
         bossName = detailData.zpData.bossInfo?.name || bossName;
         encryptJobId = detailData.zpData.jobInfo.encryptId || '';
-        verbose(`Job: ${jobName}, Boss: ${bossName}`);
+        verbose(`Job: ${jobName}, Boss: ${bossName}, JobId: ${encryptJobId}`);
+      } else if (detailData.error) {
+        verbose(`API error: ${detailData.error}`);
+      } else {
+        verbose(`API returned code: ${detailData.code}, message: ${detailData.message}`);
       }
-    } catch (e) {
-      verbose('Failed to fetch job detail API, proceeding anyway');
+    } catch (e: any) {
+      verbose(`Failed to fetch job detail: ${e.message}`);
     }
 
     // 2. 导航到职位详情页
@@ -158,41 +169,44 @@ cli({
     // 5. 验证结果 - 更详细的检查
     const result = await page.evaluate(`
       async () => {
-        // 检查聊天输入框
-        const chatInput = document.querySelector('[contenteditable="true"]');
-        const textarea = document.querySelector('textarea');
+        const url = window.location.href;
 
-        // 检查聊天窗口
-        const chatPanel = document.querySelector('[class*="chat"]') ||
-                          document.querySelector('[class*="conversation"]');
+        // 检查聊天输入框 - 多种选择器
+        const inputSelectors = [
+          '[contenteditable="true"]',
+          'textarea',
+          '.chat-editor',
+          '[class*="editor"]',
+          '[class*="input"]'
+        ];
+        let hasChatInput = false;
+        for (const sel of inputSelectors) {
+          const el = document.querySelector(sel);
+          if (el && el.offsetParent !== null) {
+            hasChatInput = true;
+            break;
+          }
+        }
 
         // 检查页面文本
         const bodyText = document.body.innerText;
+
+        // URL 跳转到聊天页 = 投递成功
+        const navigatedToChat = url.includes('/chat');
 
         // 检查是否有弹窗
         const modal = document.querySelector('[class*="modal"]') ||
                       document.querySelector('[class*="dialog"]') ||
                       document.querySelector('[class*="popup"]');
-
-        // 检查按钮状态变化
-        const buttons = document.querySelectorAll('button, a, [class*="btn"]');
-        let hasContinueBtn = false;
-        for (const btn of buttons) {
-          const text = (btn.textContent || '').trim();
-          if (text.includes('继续沟通') || text.includes('发消息')) {
-            hasContinueBtn = true;
-            break;
-          }
-        }
+        const hasModal = modal && modal.offsetParent !== null;
 
         return {
-          hasChatInput: chatInput && chatInput.offsetParent !== null,
-          hasTextarea: textarea && textarea.offsetParent !== null,
-          hasChatPanel: chatPanel && chatPanel.offsetParent !== null,
+          hasChatInput,
+          navigatedToChat,
           hasContinueChat: bodyText.includes('继续沟通'),
-          hasContinueBtn,
-          hasModal: modal && modal.offsetParent !== null,
-          url: window.location.href.substring(0, 100)
+          hasCommunicated: bodyText.includes('已沟通') || bodyText.includes('已发送'),
+          hasModal,
+          url: url.substring(0, 100)
         };
       }
     `) as any;
@@ -227,8 +241,8 @@ cli({
       await page.wait({ time: 1 });
     }
 
-    // 成功条件：聊天输入框出现 或 按钮变成"继续沟通"
-    if (result.hasChatInput || result.hasTextarea || result.hasContinueChat || result.hasContinueBtn) {
+    // 成功条件：跳转到聊天页 或 聊天输入框出现 或 页面显示"已沟通"
+    if (result.navigatedToChat || result.hasChatInput || result.hasContinueChat || result.hasCommunicated) {
       return [{ status: '✅ 投递成功', detail: `已向「${jobName}」发起沟通` }];
     }
 
