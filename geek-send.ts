@@ -26,20 +26,20 @@ cli({
     const text = kwargs.text;
 
     // 1. 导航到聊天页面
-    console.error('[geek-send] Navigating to chat page...');
+    verbose('Navigating to chat page...');
     await navigateTo(page, 'https://www.zhipin.com/web/geek/chat', 3);
-    console.error('[geek-send] Chat page loaded');
+    verbose('Chat page loaded');
 
     // 2. 获取聊天列表数据
-    console.error('[geek-send] Fetching friend list...');
+    verbose('Fetching friend list...');
     const listUrl = `https://www.zhipin.com/wapi/zprelation/friend/getGeekFriendList.json?page=1&pageSize=50`;
     let friends: any[] = [];
     try {
       const listData = await bossFetch(page, listUrl, { allowNonZero: true });
       friends = listData.zpData?.result || [];
-      console.error(`[geek-send] Found ${friends.length} friends, first: ${JSON.stringify(friends[0]?.encryptUid)}`);
+      verbose(`Found ${friends.length} friends`);
     } catch (e: any) {
-      console.error(`[geek-send] Failed to fetch friends: ${e.message}`);
+      verbose(`Failed to fetch friends: ${e.message}`);
     }
 
     const friend = friends.find((f: any) => f.encryptUid === uid);
@@ -129,7 +129,7 @@ cli({
     if (!clicked) {
       return [{
         status: '❌ 失败',
-        detail: `在聊天列表中未找到 ${friendName}，friends=${friends.length}, idx=${friendIndex}`,
+        detail: `在聊天列表中未找到 ${friendName}，请确认 UID 正确`,
       }];
     }
 
