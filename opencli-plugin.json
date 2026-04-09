@@ -1,0 +1,6 @@
+{
+  "name": "boss-geek",
+  "version": "1.0.0",
+  "opencli": ">=1.0.0",
+  "description": "BOSS直聘求职者工具 - 职位搜索、投递管理、消息查看"
+}
