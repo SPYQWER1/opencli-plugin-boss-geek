@@ -17,7 +17,7 @@ import {
 } from './utils.js';
 
 cli({
-  site: 'boss-geek',
+  site: 'boss-job',
   name: 'search',
   description: '搜索职位',
   domain: 'www.zhipin.com',

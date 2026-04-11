@@ -6,7 +6,7 @@ import { cli, Strategy } from '@jackwener/opencli/registry';
 import { requirePage, navigateTo, bossFetch, verbose } from './utils.js';
 
 cli({
-  site: 'boss-geek',
+  site: 'boss-job',
   name: 'detail',
   description: '查看职位详情 (JD)',
   domain: 'www.zhipin.com',

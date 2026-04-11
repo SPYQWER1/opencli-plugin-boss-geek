@@ -120,7 +120,7 @@ async function typeAndSendMessage(page: any, text: string): Promise<boolean> {
 }
 
 cli({
-  site: 'boss-geek',
+  site: 'boss-job',
   name: 'send',
   description: '发送聊天消息给招聘方',
   domain: 'www.zhipin.com',
