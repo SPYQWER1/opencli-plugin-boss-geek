@@ -4,3 +4,4 @@ dist/
 *.js
 .claude/
 .opencli/
+CLAUDE.md
