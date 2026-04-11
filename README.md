@@ -6,10 +6,10 @@
 
 ```bash
 # 从 GitHub 安装
-opencli plugin install github:SPYQWER1/opencli-plugin-boss-geek
+opencli plugin install github:SPYQWER1/opencli-plugin-boss-job
 
 # 或从本地目录安装
-opencli plugin install file:///path/to/opencli-plugin-boss-geek
+opencli plugin install file:///path/to/opencli-plugin-boss-job
 ```
 
 ## 前置要求
@@ -23,37 +23,37 @@ opencli plugin install file:///path/to/opencli-plugin-boss-geek
 
 ```bash
 # 搜索职位
-opencli boss-geek search 前端 --city 杭州 --limit 10
-opencli boss-geek search 产品经理 --city 北京 --experience 3-5年 --salary 15-20K
+opencli boss-job search 前端 --city 杭州 --limit 10
+opencli boss-job search 产品经理 --city 北京 --experience 3-5年 --salary 15-20K
 
 # 查看推荐职位
-opencli boss-geek recommend --limit 10
+opencli boss-job recommend --limit 10
 
 # 查看职位详情
-opencli boss-geek detail <security-id>
+opencli boss-job detail <security-id>
 ```
 
 ### 求职操作
 
 ```bash
 # 打招呼（使用系统默认招呼语）
-opencli boss-geek greet <security-id>
+opencli boss-job greet <security-id>
 
 # 打招呼（自定义招呼语）
-opencli boss-geek greet <security-id> --text "您好，我对这个职位很感兴趣"
+opencli boss-job greet <security-id> --text "您好，我对这个职位很感兴趣"
 ```
 
 ### 聊天功能
 
 ```bash
 # 查看聊天列表
-opencli boss-geek chatlist --limit 10
+opencli boss-job chatlist --limit 10
 
 # 查看聊天记录
-opencli boss-geek chatmsg <encrypt_uid> --security-id <security_id>
+opencli boss-job chatmsg <encrypt_uid> --security-id <security_id>
 
 # 发送消息
-opencli boss-geek send <encrypt_uid> "你好，请问这个职位还在招吗？"
+opencli boss-job send <encrypt_uid> "你好，请问这个职位还在招吗？"
 ```
 
 ## 参数说明
@@ -103,7 +103,7 @@ npm install
 npm run build
 
 # 本地测试
-opencli plugin uninstall boss-geek
+opencli plugin uninstall boss-job
 opencli plugin install file://$(pwd)
 ```
 
