@@ -36,11 +36,8 @@ opencli boss-job detail <security-id>
 ### 求职操作
 
 ```bash
-# 打招呼（使用系统默认招呼语）
+# 打招呼
 opencli boss-job greet <security-id>
-
-# 打招呼（自定义招呼语）
-opencli boss-job greet <security-id> --text "您好，我对这个职位很感兴趣"
 ```
 
 ### 聊天功能
@@ -76,7 +73,6 @@ opencli boss-job send <encrypt_uid> "你好，请问这个职位还在招吗？"
 | 参数 | 说明 |
 |------|------|
 | `security-id` | 职位安全ID（从搜索结果获取）|
-| `--text` | 自定义招呼语（可选）|
 
 ### chatmsg 聊天记录
 
