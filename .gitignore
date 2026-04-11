@@ -1,8 +1,7 @@
 node_modules/
 dist/
-*.js
-!opencli-plugin.json
 *.d.ts
+*.js
 .claude/
 .opencli/
 CLAUDE.md
