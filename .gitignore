@@ -2,6 +2,4 @@ node_modules/
 dist/
 *.d.ts
 *.js
-.claude/
 .opencli/
-CLAUDE.md
