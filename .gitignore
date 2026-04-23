@@ -1,6 +1,8 @@
 node_modules/
 dist/
 *.d.ts
-*.js
 .claude/
 .opencli/
+
+# 忽略 node_modules 里的 js，但是保留插件自己的编译文件
+node_modules/**/*.js
