@@ -28,9 +28,12 @@ cli({
 
       // Extract online resume
       let onlineName = '在线简历';
-      const userNameEl = document.querySelector('#userinfo p');
-      if (userNameEl && userNameEl.textContent.trim()) {
-        onlineName = userNameEl.textContent.trim();
+      const userInfo = document.querySelector('#userinfo');
+      if (userInfo) {
+        const nameEl = userInfo.querySelector('p');
+        if (nameEl && nameEl.textContent.trim()) {
+          onlineName = nameEl.textContent.trim();
+        }
       }
       result.push({
         type: '在线简历',
@@ -39,58 +42,83 @@ cli({
         downloadUrl: ''
       });
 
-      // Extract attachment resumes - look for file list section
-      // The page has an attachments section near the bottom with file items
-      const allElements = Array.from(document.body.querySelectorAll('*'));
+      // Extract attachment resumes - look for download links first
+      const seenNames = new Set();
+      const downloadLinks = Array.from(document.querySelectorAll('a[type=download]'));
 
-      for (const el of allElements) {
-        const text = el.textContent || '';
-        // Look for elements that have a download link and a title
-        const hasDownload = el.querySelector('a[type=download]');
-        const hasTitle = el.querySelector('a[title]');
+      for (const downloadLink of downloadLinks) {
+        let title = '';
+        let updatedAt = '';
+        const href = downloadLink.getAttribute('href') || '';
 
-        if (hasDownload && hasTitle) {
-          const title = hasTitle.getAttribute('title') || '';
-          const downloadUrl = hasDownload.getAttribute('href') || '';
-
-          // Skip if already added
-          if (title && !result.some(r => r.name === title)) {
-            // Extract update time
-            let updatedAt = '';
-            const fullText = el.textContent || '';
-            const dateMatch = fullText.match(/更新于[\\s]*([\\d]{4}\\.[\\d]{2}\\.[\\d]{2}[\\s]*[\\d]{2}:[\\d]{2})/);
-            if (dateMatch) {
-              updatedAt = dateMatch[1];
-            }
-
-            result.push({
-              type: '附件简历',
-              name: title,
-              updatedAt: updatedAt,
-              downloadUrl: downloadUrl
-            });
+        // Look for a title link nearby
+        const parent = downloadLink.parentElement;
+        if (parent) {
+          const titleLink = parent.querySelector('a[title]');
+          if (titleLink) {
+            title = titleLink.getAttribute('title') || '';
           }
+
+          // Extract update time
+          const fullText = parent.textContent || '';
+          const dateMatch = fullText.match(/(\\d{4}\\.\\d{2}\\.\\d{2}\\s*\\d{2}:\\d{2})/);
+          if (dateMatch) {
+            updatedAt = dateMatch[1];
+          }
+
+          // If no title link, try to find the filename in text
+          if (!title) {
+            const allText = parent.textContent || '';
+            const pdfMatch = allText.match(/([^\\s]+\\.pdf)/i);
+            const docMatch = allText.match(/([^\\s]+\\.doc[x]?)/i);
+            if (pdfMatch) title = pdfMatch[1];
+            else if (docMatch) title = docMatch[1];
+          }
+        }
+
+        // If still no title, try to look for nearby elements
+        if (!title && downloadLink) {
+          let current = downloadLink.previousElementSibling;
+          for (let i = 0; i < 5 && current; i++) {
+            const text = current.textContent || '';
+            if (text.includes('.pdf') || text.includes('.doc')) {
+              const pdfMatch = text.match(/([^\\s]+\\.pdf)/i);
+              const docMatch = text.match(/([^\\s]+\\.doc[x]?)/i);
+              if (pdfMatch) { title = pdfMatch[1]; break; }
+              else if (docMatch) { title = docMatch[1]; break; }
+            }
+            current = current.previousElementSibling;
+          }
+        }
+
+        if (title && !seenNames.has(title)) {
+          seenNames.add(title);
+          result.push({
+            type: '附件简历',
+            name: title,
+            updatedAt: updatedAt,
+            downloadUrl: href.startsWith('http') ? href : 'https://www.zhipin.com' + href
+          });
         }
       }
 
-      // Fallback: if no attachments found with above method, try simpler approach
+      // Fallback: if we found nothing, try a more aggressive approach
       if (result.length === 1) {
-        const allLi = Array.from(document.querySelectorAll('li'));
-        for (const li of allLi) {
-          const text = li.textContent || '';
-          if (text.includes('.pdf') || text.includes('.doc')) {
-            const titleA = li.querySelector('a[title]');
-            const downloadA = li.querySelector('a[type=download]');
-            if (titleA) {
-              const title = titleA.getAttribute('title') || '';
-              if (title && !result.some(r => r.name === title)) {
-                result.push({
-                  type: '附件简历',
-                  name: title,
-                  updatedAt: '',
-                  downloadUrl: downloadA ? downloadA.getAttribute('href') || '' : ''
-                });
-              }
+        const allLinks = Array.from(document.querySelectorAll('a[href]'));
+        for (const link of allLinks) {
+          const href = link.getAttribute('href') || '';
+          const title = link.getAttribute('title') || '';
+
+          if (href.includes('download') || title.includes('.pdf') || title.includes('.doc')) {
+            const name = title || link.textContent.trim();
+            if (name && (name.includes('.pdf') || name.includes('.doc')) && !seenNames.has(name)) {
+              seenNames.add(name);
+              result.push({
+                type: '附件简历',
+                name: name,
+                updatedAt: '',
+                downloadUrl: href.startsWith('http') ? href : 'https://www.zhipin.com' + href
+              });
             }
           }
         }
