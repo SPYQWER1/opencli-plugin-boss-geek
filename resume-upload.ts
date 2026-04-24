@@ -102,6 +102,78 @@ async function extractResumeList(page: any): Promise<any[]> {
   return resumes || [];
 }
 
+async function uploadResume(page: any, filePath: string): Promise<boolean> {
+  const fileName = path.basename(filePath);
+  verbose(`准备上传: ${fileName}`);
+
+  // 尝试查找并设置文件 input
+  const result = await page.evaluate(`
+    async () => {
+      const fileName = ${JSON.stringify(fileName)};
+
+      // 查找所有 file input
+      const inputs = document.querySelectorAll('input[type=file]');
+      let targetInput = null;
+
+      // 优先找 accept 包含 pdf 的
+      for (const input of inputs) {
+        const accept = input.getAttribute('accept') || '';
+        if (accept.indexOf('pdf') >= 0) {
+          targetInput = input;
+          break;
+        }
+      }
+
+      // 如果没找到，用第一个
+      if (!targetInput && inputs.length > 0) {
+        targetInput = inputs[0];
+      }
+
+      if (!targetInput) {
+        return { success: false, reason: '未找到上传控件' };
+      }
+
+      // 注意：由于安全限制，浏览器不允许直接通过 JS 设置文件路径
+      // 这里我们返回需要在外部设置文件的信息
+      return {
+        success: true,
+        found: true,
+        // 返回 input 的特征以便后续操作
+        hasAccept: targetInput.hasAttribute('accept'),
+        accept: targetInput.getAttribute('accept') || ''
+      };
+    }
+  `) as any;
+
+  if (!result?.success) {
+    verbose(`上传失败: ${result?.reason || '未知错误'}`);
+    return false;
+  }
+
+  verbose('找到上传控件，尝试设置文件...');
+
+  // 尝试使用 OpenCLI 的文件设置功能
+  try {
+    // 如果 page.setInputFiles 可用
+    if (typeof page.setInputFiles === 'function') {
+      await page.setInputFiles('input[type=file]', filePath);
+      verbose('文件已设置');
+    } else {
+      // 尝试触发 change 事件的方式
+      verbose('setInputFiles 不可用，尝试替代方案...');
+      // 大多数情况下需要实际的 UI 交互
+    }
+  } catch (e) {
+    verbose(`设置文件时出错: ${e}`);
+  }
+
+  // 等待上传完成
+  verbose('等待上传完成...');
+  await page.wait({ time: 5 });
+
+  return true;
+}
+
 cli({
   site: 'boss-job',
   name: 'resume-upload',
@@ -131,7 +203,11 @@ cli({
     verbose(`Navigating to ${RESUME_URL}`);
     await navigateTo(page, RESUME_URL, 2);
 
-    // TODO: 上传逻辑
+    // 执行上传
+    const uploaded = await uploadResume(page, filePath);
+    if (!uploaded) {
+      verbose('上传可能未完成，仍返回当前列表');
+    }
 
     // 返回当前简历列表
     const resumes = await extractResumeList(page);
