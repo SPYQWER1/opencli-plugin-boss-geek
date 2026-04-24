@@ -39,69 +39,66 @@ cli({
       // Try multiple methods to find attachment resumes
       const seen = {};
 
-      // Method 1: Look for download links with type attribute
-      const downloadLinks = document.querySelectorAll('a[type=download]');
-      for (let i = 0; i < downloadLinks.length; i++) {
-        const link = downloadLinks[i];
-        addResumeFromLink(link, result, seen);
-      }
-
-      // Method 2: Look for any link that has download in href
+      // Look for download links - search more carefully
       const allLinks = document.querySelectorAll('a[href]');
       for (let i = 0; i < allLinks.length; i++) {
         const link = allLinks[i];
         const href = link.getAttribute('href') || '';
-        if (href.indexOf('download') >= 0) {
-          addResumeFromLink(link, result, seen);
-        }
-      }
-
-      // Method 3: Look for elements that contain .pdf or .doc in text
-      const allElements = document.querySelectorAll('*');
-      for (let i = 0; i < allElements.length; i++) {
-        const el = allElements[i];
-        const text = el.textContent || '';
-        if (text.indexOf('.pdf') >= 0 || text.indexOf('.doc') >= 0) {
-          const linkInEl = el.querySelector('a[href]');
-          if (linkInEl) {
-            addResumeFromLink(linkInEl, result, seen);
-          }
-        }
-      }
-
-      function addResumeFromLink(link, result, seen) {
-        const href = link.getAttribute('href') || '';
         const title = link.getAttribute('title') || '';
         const text = link.textContent || '';
 
-        let name = title || text.trim();
+        // Check if this looks like a resume
+        const isPdf = title.indexOf('.pdf') >= 0 || text.indexOf('.pdf') >= 0;
+        const isDoc = title.indexOf('.doc') >= 0 || text.indexOf('.doc') >= 0;
 
-        if (!name && link.parentElement) {
-          const parent = link.parentElement;
-          const parentText = parent.textContent || '';
-          const pdfMatch = parentText.match(/([^\\s]+\\.pdf)/i);
-          const docMatch = parentText.match(/([^\\s]+\\.doc[x]?)/i);
-          if (pdfMatch) name = pdfMatch[1];
-          else if (docMatch) name = docMatch[1];
-        }
+        if (isPdf || isDoc) {
+          let name = title || text.trim();
 
-        if (name) {
-          // Clean up the name
-          name = name.trim();
-          if (name.length > 100) name = name.substring(0, 100);
+          // Look for filename in nearby text
+          if (!name && link.parentElement) {
+            const parent = link.parentElement;
+            const parentText = parent.textContent || '';
+            const pdfMatch = parentText.match(/([^\\s]+\\.pdf)/i);
+            const docMatch = parentText.match(/([^\\s]+\\.doc[x]?)/i);
+            if (pdfMatch) name = pdfMatch[1];
+            else if (docMatch) name = docMatch[1];
+          }
 
-          if (!seen[name] && (name.indexOf('.pdf') >= 0 || name.indexOf('.doc') >= 0)) {
-            seen[name] = true;
-            let url = href;
-            if (url && url.indexOf('http') !== 0 && url.indexOf('/') === 0) {
-              url = 'https://www.zhipin.com' + url;
+          if (name) {
+            name = name.trim();
+            if (name.length > 100) name = name.substring(0, 100);
+
+            if (!seen[name]) {
+              seen[name] = true;
+
+              // Try to find a real download URL
+              let url = href;
+              if (url === 'javascript:;' || url === 'javascript:void(0)' || !url) {
+                // Look for nearby download link
+                const parent = link.parentElement;
+                if (parent) {
+                  const downloadLinks = parent.querySelectorAll('a[href]');
+                  for (let j = 0; j < downloadLinks.length; j++) {
+                    const possibleDownload = downloadLinks[j].getAttribute('href') || '';
+                    if (possibleDownload.indexOf('download') >= 0 || possibleDownload.indexOf('.pdf') >= 0 || possibleDownload.indexOf('.doc') >= 0) {
+                      url = possibleDownload;
+                      break;
+                    }
+                  }
+                }
+              }
+
+              if (url && url.indexOf('http') !== 0 && url.indexOf('/') === 0) {
+                url = 'https://www.zhipin.com' + url;
+              }
+
+              result.push({
+                type: '附件简历',
+                name: name,
+                updatedAt: '',
+                downloadUrl: url
+              });
             }
-            result.push({
-              type: '附件简历',
-              name: name,
-              updatedAt: '',
-              downloadUrl: url
-            });
           }
         }
       }
