@@ -94,17 +94,6 @@ cli({
         verbose('附件保存成功');
         // 4. 返回最新简历列表
         const results = [];
-        const baseData = await bossFetch(page, 'https://www.zhipin.com/wapi/zpgeek/resume/baseinfo/query.json');
-        const info = baseData.zpData;
-        if (info) {
-            results.push({
-                type: '在线简历',
-                name: info.name || '',
-                size: '',
-                uploadTime: '',
-                resumeId: '',
-            });
-        }
         const attachData = await bossFetch(page, 'https://www.zhipin.com/wapi/zpgeek/resume/attachment/checkbox.json');
         const resumeList = attachData.zpData?.resumeList || [];
         for (const r of resumeList) {

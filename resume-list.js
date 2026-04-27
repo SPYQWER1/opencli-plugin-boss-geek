@@ -18,18 +18,6 @@ cli({
         verbose('获取简历列表...');
         await navigateTo(page, 'https://www.zhipin.com/web/geek/chat', 2);
         const results = [];
-        // 获取基本信息（在线简历）
-        const baseData = await bossFetch(page, 'https://www.zhipin.com/wapi/zpgeek/resume/baseinfo/query.json');
-        const info = baseData.zpData;
-        if (info) {
-            results.push({
-                type: '在线简历',
-                name: info.name || '',
-                size: '',
-                uploadTime: '',
-                resumeId: '',
-            });
-        }
         // 获取附件简历列表
         const attachData = await bossFetch(page, 'https://www.zhipin.com/wapi/zpgeek/resume/attachment/checkbox.json');
         const resumeList = attachData.zpData?.resumeList || [];

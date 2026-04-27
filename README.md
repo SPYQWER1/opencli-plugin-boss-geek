@@ -2,7 +2,7 @@
 
 BOSS直聘求职者命令行工具 — OpenCLI 插件
 
-通过复用 Chrome 浏览器登录态，在终端中完成 **职位搜索、推荐浏览、职位详情、打招呼、聊天列表、聊天消息查看、发送消息、简历列表** 等功能。
+通过复用 Chrome 浏览器登录态，在终端中完成 **职位搜索、推荐浏览、职位详情、打招呼、聊天列表、聊天消息查看、发送消息、简历列表、简历上传、简历删除** 等功能。
 
 ---
 
@@ -19,6 +19,7 @@ BOSS直聘求职者命令行工具 — OpenCLI 插件
 | `send` | 向招聘方发送聊天消息 | UI 自动化 |
 | `resume-list` | 查看简历列表（在线简历和附件简历） | API |
 | `resume-upload` | 上传 PDF 简历 | API |
+| `resume-delete` | 删除附件简历 | API |
 
 ---
 
@@ -147,6 +148,14 @@ opencli boss-job resume-upload /path/to/your/resume.pdf
 
 上传成功后会显示最新的简历列表。
 
+### 删除附件简历
+
+```bash
+opencli boss-job resume-delete <resumeId>
+```
+
+`resumeId` 从 `resume-list` 结果中获取。删除成功后会显示剩余简历列表。
+
 ---
 
 ## 项目结构
@@ -197,6 +206,7 @@ boss-geek-cli/
 | `/wapi/zpgeek/resume/attachment/checkbox.json` | 附件简历列表 |
 | `/wapi/zpupload/resume/uploadFile.json` | 上传简历文件 |
 | `/wapi/zpgeek/resume/attachment/save.json` | 保存附件关联 |
+| `/wapi/zpgeek/resume/attachment/delete.json` | 删除附件简历 |
 
 ---
 
